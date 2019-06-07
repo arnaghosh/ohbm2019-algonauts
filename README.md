@@ -2,10 +2,10 @@
 OHBM Hackathon 2019 project repository for the Algonauts challenge
 
 To do list :-
-+ [ ] Write functions for loading data and labels
-+ [ ] Write model class
-+ [ ] Visualize the variance in RDMs across subjects - will help take decisions for subject level model
-+ [ ] Train a model's final feature layer to explain late visual cortex - fMRI
++ [X] Write functions for loading data and labels
++ [X] Write model class
++ [X] Visualize the variance in RDMs across subjects - will help take decisions for subject level model
++ [X] Train a model's final feature layer to explain late visual cortex - fMRI --> running
 + [ ] Train a model's initial feature layers to explain early visual cortex - fMRI
 + [ ] Train a model's final feature layer to explain late visual cortex activity - MEG
 + [ ] Train a model's initial feature layers to explain early visual cortex activity - MEG
