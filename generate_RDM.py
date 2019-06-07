@@ -7,7 +7,7 @@ def get_test_images():
     """
     :return: list of [300,300,3] with values 0-255
     """
-    TEST_FILENAME = 'Test_Data/Elvisha.mat'
+    TEST_FILENAME = 'Test_Data/78images.mat'
     data = read_mat(TEST_FILENAME)
     size = data['visual_stimuli'].shape[1]
     X = [data['visual_stimuli'][0, i][1] for i in range(size)]
@@ -117,7 +117,7 @@ IT_activations = np.array(IT_activations)
 print(EVC_activations.shape, IT_activations.shape)
 EVC_dis = 1- np.corrcoef(EVC_activations)
 IT_dis = 1- np.corrcoef(IT_activations)
-sio.savemat('118Image_RDM',{'EVC_RDMs':EVC_dis,'IT_RDMs':IT_dis})
+sio.savemat('118Image_RDM.mat',{'EVC_RDMs':EVC_dis,'IT_RDMs':IT_dis})
 
 
 ## generate 92 image RDM
@@ -138,4 +138,25 @@ IT_activations = np.array(IT_activations)
 print(EVC_activations.shape, IT_activations.shape)
 EVC_dis = 1- np.corrcoef(EVC_activations)
 IT_dis = 1- np.corrcoef(IT_activations)
-sio.savemat('92Image_RDM',{'EVC_RDMs':EVC_dis,'IT_RDMs':IT_dis})
+sio.savemat('92Image_RDM.mat',{'EVC_RDMs':EVC_dis,'IT_RDMs':IT_dis})
+
+
+## generate 78 image RDM
+dataset = TestDatasetRDM(transform=transform)
+loader = torch.utils.data.DataLoader(dataset, num_workers=1, batch_size=1, shuffle=False)
+
+EVC_activations = []
+IT_activations = []
+with torch.no_grad():
+	for iter,x1 in enumerate(loader):
+		feats_list_EVC = CNN_EVC(x1)
+		EVC_activations.append(feats_list_EVC[2].flatten().numpy())
+		feats_list_IT = CNN_IT(x1)
+		IT_activations.append(feats_list_IT[6].flatten().numpy())
+
+EVC_activations = np.array(EVC_activations)
+IT_activations = np.array(IT_activations)
+print(EVC_activations.shape, IT_activations.shape)
+EVC_dis = 1- np.corrcoef(EVC_activations)
+IT_dis = 1- np.corrcoef(IT_activations)
+sio.savemat('78Image_RDM.mat',{'EVC_RDMs':EVC_dis,'IT_RDMs':IT_dis})
