@@ -44,3 +44,45 @@ def test_get_train_target():
 
     assert y.shape == (118, 118, 15)
     assert type(y) == np.ndarray
+
+class TrainDataset(torch.utils.data.Dataset):
+
+    def __init__(self, transform=None):
+        self.train_images = get_train_images()
+
+        self.len_images = len(self.train_images)
+        self.permutations = tuple(itertools.combinations(
+            range(self.len_images), 2))
+
+        self.transform = transform
+
+        self.target = get_train_target().mean(axis=2).astype(np.float32)
+
+        assert self.target.shape == (self.len_images, self.len_images)
+
+    def __len__(self):
+        return len(self.permutations)
+
+    def __getitem__(self, index):
+        i = self.permutations[index]
+        r1 = self.train_images[i[0]]
+        r2 = self.train_images[i[1]]
+        r3 = self.target[i]
+
+        if self.transform:
+            r1 = self.transform(r1)
+            r2 = self.transform(r2)
+
+        return r1, r2, r3
+
+
+def test_train_dataset():
+    dataset = TrainDataset()
+
+    RANDOM = 34
+
+    d = dataset[RANDOM]
+
+    assert len(d) == 3
+    assert d[0].shape == d[1].shape == (300, 300, 3)
+    assert type(d[2]) == np.float64
