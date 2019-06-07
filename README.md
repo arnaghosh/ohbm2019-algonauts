@@ -5,8 +5,8 @@ To do list :-
 + [X] Write functions for loading data and labels
 + [X] Write model class
 + [X] Visualize the variance in RDMs across subjects - will help take decisions for subject level model
-+ [X] Train a model's final feature layer to explain late visual cortex - fMRI --> running
-+ [ ] Train a model's initial feature layers to explain early visual cortex - fMRI
++ [X] Train a model's final feature layer to explain late visual cortex - fMRI 
++ [X] Train a model's initial feature layers to explain early visual cortex - fMRI
 + [ ] Train a model's final feature layer to explain late visual cortex activity - MEG
 + [ ] Train a model's initial feature layers to explain early visual cortex activity - MEG
 + [ ] Train a model jointly to optimize for early and late activity
