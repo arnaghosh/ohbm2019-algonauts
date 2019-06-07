@@ -185,7 +185,8 @@ def train(model,cuda=False):
     learning_rate = .001
     learning_rate_decay = 0.001
     momentum = .9
-    batch_size = 256
+    tr_batch_size = 200
+    val_batch_size = 50
 
     # Data
     transform = transforms.Compose([
@@ -196,10 +197,10 @@ def train(model,cuda=False):
                              std=[0.229, 0.224, 0.225])
     ])
     tr_dataset = TrainDataset(transform=transform)
-    tr_loader = torch.utils.data.DataLoader(tr_dataset, num_workers=4, batch_size=batch_size, shuffle=True)
+    tr_loader = torch.utils.data.DataLoader(tr_dataset, num_workers=4, batch_size=tr_batch_size, shuffle=True)
 
     val_dataset = ValidationDataset(transform=transform)
-    val_loader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=val_batch_size, shuffle=True)
 
     criterion = torch.nn.MSELoss()
     
@@ -226,30 +227,31 @@ def train(model,cuda=False):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            epoch_loss+=loss
+            epoch_loss+=loss.item()
 
         epoch_loss/=(batch+1)
         tqdm.write(str(epoch_loss))
 
         if e%5==4:
             model.eval()
-            for batch, (x1, x2, y) in enumerate(val_loader):
+            with torch.no_grad():
+                for batch, (x1, x2, y) in enumerate(val_loader):
 
-                # print(f"Epoch/Batch: {e}/{batch}")
+                    # print(f"Epoch/Batch: {e}/{batch}")
 
-                x1 = cuda_wrap(x1)
-                x2 = cuda_wrap(x2)
-                y = cuda_wrap(y)
-                out = model(x1, x2)
+                    x1 = cuda_wrap(x1)
+                    x2 = cuda_wrap(x2)
+                    y = cuda_wrap(y)
+                    out = model(x1, x2)
 
-                loss = criterion(out, y)
-                val_epoch_loss+=loss
+                    loss = criterion(out, y)
+                    val_epoch_loss+=loss.item()
 
-            val_epoch_loss/=(batch+1)
-            tqdm.write("ValidationLoss: "+str(val_epoch_loss))
-            if val_epoch_loss<=best_val_loss:
-                tqdm.write("Saving model... at Models/ in epoch "+str(e))
-                torch.save(model, open('Models/Siamese_Alex.tm', 'wb')) 
+                val_epoch_loss/=(batch+1)
+                tqdm.write("ValidationLoss: "+str(val_epoch_loss))
+                if val_epoch_loss<=best_val_loss:
+                    tqdm.write("Saving model... at Models/ in epoch "+str(e))
+                    torch.save(model, open('Models/Siamese_Alex.tm', 'wb')) 
 
 
 def main():
