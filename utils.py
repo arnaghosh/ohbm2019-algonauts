@@ -86,3 +86,15 @@ def test_train_dataset():
     assert len(d) == 3
     assert d[0].shape == d[1].shape == (300, 300, 3)
     assert type(d[2]) == np.float64
+
+    
+transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    ])
+dataset = TrainDataset(transform=transform)
+loader = torch.utils.data.DataLoader(dataset, num_workers=4, batch_size=batch_size, shuffle=True)
