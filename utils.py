@@ -88,13 +88,60 @@ def test_train_dataset():
     assert type(d[2]) == np.float64
 
     
-transform = transforms.Compose([
+def train(cuda=False):
+    def cuda_wrap(obj):
+        if cuda:
+            return obj.cuda()
+        return obj
+
+    nepochs = 100
+    learning_rate = .01
+    momentum = .9
+    batch_size = 32
+
+    # Data
+    transform = transforms.Compose([
         transforms.ToPILImage(),
-        transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
-dataset = TrainDataset(transform=transform)
-loader = torch.utils.data.DataLoader(dataset, num_workers=4, batch_size=batch_size, shuffle=True)
+    dataset = TrainDataset(transform=transform)
+    loader = torch.utils.data.DataLoader(dataset, num_workers=4, batch_size=batch_size, shuffle=True)
+    criterion = torch.nn.MSELoss()
+
+    # Model
+    model = cuda_wrap(SModel()) # change model here!!
+
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)  # change optim here!!
+
+    model.train()
+    for e in range(nepochs):
+
+        for batch, (x1, x2, y) in enumerate(loader):
+
+            print(f"Epoch/Batch: {e}/{batch}")
+
+            x1 = cuda_wrap(x1)
+            x2 = cuda_wrap(x2)
+            y = cuda_wrap(y)
+            out = model(x1, x2)
+
+            loss = criterion(out, y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            print(loss)
+
+    print("Saving model... at data/")
+    torch.save(model, open('data/model.tm', 'wb'))  # change model saving folder!!
+
+
+def main():
+    train(torch.cuda.is_available())
+
+
+if __name__ == '__main__':
+    main()
