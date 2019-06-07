@@ -1,5 +1,12 @@
+    
 import h5py
 import scipy.io
+import numpy as np
+import torch
+import torch.utils.data
+import torchvision.transforms as transforms
+from tqdm import tqdm
+import itertools
 
 
 def read_mat(filename):
@@ -13,7 +20,7 @@ def get_train_images():
     """
     :return: list of [300,300,3] with values 0-255
     """
-    TRAIN_FILENAME = 'data/algonautsChallenge2019/Training_Data/118_Image_Set/118images.mat'
+    TRAIN_FILENAME = 'Training_Data/118_Image_Set/118images.mat'
     data = read_mat(TRAIN_FILENAME)
     size = data['visual_stimuli'].shape[1]
     X = [data['visual_stimuli'][0, i][1] for i in range(size)]
@@ -34,7 +41,7 @@ def get_train_target() -> np.ndarray:
     """
     :return: Returns [118,118,15] for 15 subjects
     """
-    TRAIN_TARGET = 'data/algonautsChallenge2019/Training_Data/118_Image_Set/target_fmri.mat'
+    TRAIN_TARGET = 'Training_Data/118_Image_Set/target_fmri.mat'
     data = read_h5(TRAIN_TARGET)
     return data['IT_RDMs'][:]
 
@@ -87,17 +94,17 @@ def test_train_dataset():
     assert d[0].shape == d[1].shape == (300, 300, 3)
     assert type(d[2]) == np.float64
 
-    
-def train(cuda=False):
+
+def train(model,cuda=False):
     def cuda_wrap(obj):
         if cuda:
             return obj.cuda()
         return obj
 
-    nepochs = 100
-    learning_rate = .01
+    nepochs = 10
+    learning_rate = .001
     momentum = .9
-    batch_size = 32
+    batch_size = 8
 
     # Data
     transform = transforms.Compose([
@@ -110,18 +117,16 @@ def train(cuda=False):
     dataset = TrainDataset(transform=transform)
     loader = torch.utils.data.DataLoader(dataset, num_workers=4, batch_size=batch_size, shuffle=True)
     criterion = torch.nn.MSELoss()
-
-    # Model
-    model = cuda_wrap(SModel()) # change model here!!
-
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)  # change optim here!!
-
+    
+    model = cuda_wrap(model)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)  # change optim here!!
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     model.train()
-    for e in range(nepochs):
+    for e in tqdm(range(nepochs)):
 
         for batch, (x1, x2, y) in enumerate(loader):
 
-            print(f"Epoch/Batch: {e}/{batch}")
+            # print(f"Epoch/Batch: {e}/{batch}")
 
             x1 = cuda_wrap(x1)
             x2 = cuda_wrap(x2)
@@ -133,15 +138,11 @@ def train(cuda=False):
             loss.backward()
             optimizer.step()
 
-            print(loss)
+            tqdm.write(str(loss))
 
-    print("Saving model... at data/")
-    torch.save(model, open('data/model.tm', 'wb'))  # change model saving folder!!
+    print("Saving model... at Models/")
+    torch.save(model, open('Models/Siamese_Alex.tm', 'wb')) 
 
 
 def main():
     train(torch.cuda.is_available())
-
-
-if __name__ == '__main__':
-    main()
