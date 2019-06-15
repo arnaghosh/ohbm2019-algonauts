@@ -12,7 +12,8 @@ To do list :-
 + [ ] Train a model jointly to optimize for early and late activity
 
 Major issues :-
-+ [ ] How to tackle subject variance? Do we treat them as noisy labels? Do we train separate models and then average predictions?
++ [X] How to tackle subject variance? Do we treat them as noisy labels? Do we train separate models and then average predictions? --> If a model is well-trained on avg RDMs, it is good enough for the competition!!
++ [ ] Need to add np.eye to RDM and then train Siamese model? Although itertools.combinations doesn't return (i,i) but worth a try
 
 Some ideas :-
 * Train each model for eash subject, generate predictions and average
